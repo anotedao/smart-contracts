@@ -1,0 +1,99 @@
+{-# STDLIB_VERSION 5 #-}
+{-# CONTENT_TYPE DAPP #-}
+{-# SCRIPT_TYPE ACCOUNT #-}
+
+let SEP = "__"
+let MULT6 = 1_000_000
+let MULT8 = 1_0000_0000
+
+let ANOTEIDSTR = "WAVES"
+let ANOTEID    = fromBase58String(ANOTEIDSTR)
+let ANOTEADDR = Address(base58'3AVTze8bR1SqqMKv3uLedrnqCuWpdU7GZwX')
+let PROTOPARTX8 = 95000000
+let BENPARTX8 = 5000000
+
+func getStringOrFail(address: Address, key: String) = {
+  address.getString(key).valueOrErrorMessage("Mandatory this." + key + " is not defined")
+}
+
+func getAddressOrFail(key: String) = {
+  this.getStringOrFail(key).addressFromString().valueOrErrorMessage("Fail to convert this." + key + " value into Address")
+}
+
+func validateAddressOrFail(addressStr: String) = {
+  let address = addressStr.addressFromString().valueOrErrorMessage("fail to convert into address " + addressStr)
+  if (wavesBalance(address).available < 0) then throw() else addressStr
+}
+
+func keyDepositAmount()                     = "%s%s__cfg__depositAmount"
+func keyNeutrinoAddressStr()                = "%s%s__cfg__neutrinoAddress"
+func keyMasterNodeAddressStr()              = "%s%s__cfg__mainNeutrinoNodeAddress"
+func keyProtocolPartX6()                    = "%s%s__cfg__protocolPartX6"
+func keyBenificaryPartX6()                  = "%s%s__cfg__benificaryPartX6"
+func keyMinDistributeAmount()               = "%s%s__cfg__minDistributeAmount"
+
+# miningNode KEYs
+func keyBeneficiaryAddress()  = "%s%s__cfg__beneficiaryAddress"
+
+func resolveBeneficiaries(minerAddress: Address, beneficiaryFromParam: Address) = {
+  let minerScriptHash = scriptHash(minerAddress)
+
+  let beneficiaryFromMinerState = minerAddress.getStringOrFail(keyBeneficiaryAddress()).addressFromStringValue()
+
+  if (minerScriptHash == unit) then beneficiaryFromParam else beneficiaryFromMinerState
+}
+
+@Callable(i)
+func constructor(depositAmount: Int, neutrinoAddressStr: String, masterNodeAddressStr: String, protocolPartX6: Int, benificaryPartX6: Int) = {
+  if (i.caller != this) then throw("permissions denied") else
+  if (depositAmount < 0) then throw("depositAmount less then zero") else
+  if (protocolPartX6 < 0) then throw("protocolPartX6 less then zero") else
+  if (benificaryPartX6 < 0) then throw("benificaryPartX6 less then zero") else
+  if ((protocolPartX6 + benificaryPartX6) != MULT6) then throw("parts sum must be 1") else
+
+  [IntegerEntry(keyDepositAmount(), depositAmount),
+    StringEntry(keyNeutrinoAddressStr(), neutrinoAddressStr.validateAddressOrFail()),
+    StringEntry(keyMasterNodeAddressStr(), masterNodeAddressStr.validateAddressOrFail()),
+    IntegerEntry(keyProtocolPartX6(), protocolPartX6),
+    IntegerEntry(keyBenificaryPartX6(), benificaryPartX6)
+  ]
+}
+
+@Callable(i)
+func distributeMinerReward(beneficiaryAddressStr: String) = {
+  let minDistributeAmount = this.getInteger(keyMinDistributeAmount()).valueOrElse(2 * MULT8)
+  if (i.payments.size() != 1) then throw("exact 1 payment must be attached") else
+  if (i.caller != i.originCaller) then throw("dapp to dapp calls are not allowed") else
+  let pmt = i.payments[0]
+  let pmtAssetId = pmt.assetId.valueOrElse(ANOTEID)
+  let feeAmt = i.fee
+  let feeAssetId = i.feeAssetId.valueOrElse(ANOTEID)
+
+  let callReward = feeAmt * 3
+  let minedAmt = pmt.amount - callReward
+
+  if (pmt.amount != minDistributeAmount) then throw("attached payment must be exact " + minDistributeAmount.toString() + " Wavelets") else
+  if (pmtAssetId != ANOTEID) then throw("only Waves can be used in payment") else
+  if (feeAssetId != ANOTEID) then throw("only Waves can be used in fees") else
+  if (feeAmt != 5 * MULT8 / 1000) then throw("fee amount couldn't exceed 0.005") else
+#   let neutrinoAddress = keyNeutrinoAddressStr().getAddressOrFail()
+  let neutrinoAddress = ANOTEADDR
+  let masterNodeAddress = keyMasterNodeAddressStr().getAddressOrFail()
+
+  let minerAddress = i.caller
+  let beneficiaryFromParam = beneficiaryAddressStr.addressFromStringValue()
+
+  let beneficiaryAddress = resolveBeneficiaries(minerAddress, beneficiaryFromParam)
+  let txRewardReceiver   = beneficiaryFromParam
+
+  let protocolPart    = PROTOPARTX8
+  let beneficiaryPart  = BENPARTX8
+
+  let beneficiaryAmt = fraction(minedAmt, beneficiaryPart, MULT8)
+  let protocolAmt = minedAmt - beneficiaryAmt
+
+  [ScriptTransfer(beneficiaryAddress,    beneficiaryAmt, unit),
+    ScriptTransfer(neutrinoAddress,     protocolAmt,  unit),
+    ScriptTransfer(txRewardReceiver,  callReward,    unit)
+  ]
+}
