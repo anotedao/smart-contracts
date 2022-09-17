@@ -35,12 +35,12 @@ func keyMinDistributeAmount()               = "%s%s__cfg__minDistributeAmount"
 # miningNode KEYs
 func keyBeneficiaryAddress()  = "%s%s__cfg__beneficiaryAddress"
 
-func resolveBeneficiaries(minerAddress: Address, beneficiaryFromParam: Address) = {
+func resolveBeneficiaries(minerAddress: Address) = {
   let minerScriptHash = scriptHash(minerAddress)
 
   let beneficiaryFromMinerState = minerAddress.getStringOrFail(keyBeneficiaryAddress()).addressFromStringValue()
 
-  if (minerScriptHash == unit) then beneficiaryFromParam else beneficiaryFromMinerState
+  if (minerScriptHash == unit) then ANOTEADDR else beneficiaryFromMinerState
 }
 
 @Callable(i)
@@ -60,7 +60,7 @@ func constructor(depositAmount: Int, neutrinoAddressStr: String, masterNodeAddre
 }
 
 @Callable(i)
-func distributeMinerReward(beneficiaryAddressStr: String) = {
+func distributeMinerReward() = {
   let minDistributeAmount = this.getInteger(keyMinDistributeAmount()).valueOrElse(2 * MULT8)
   if (i.payments.size() != 1) then throw("exact 1 payment must be attached") else
   if (i.caller != i.originCaller) then throw("dapp to dapp calls are not allowed") else
@@ -81,10 +81,8 @@ func distributeMinerReward(beneficiaryAddressStr: String) = {
   let masterNodeAddress = keyMasterNodeAddressStr().getAddressOrFail()
 
   let minerAddress = i.caller
-  let beneficiaryFromParam = beneficiaryAddressStr.addressFromStringValue()
 
-  let beneficiaryAddress = resolveBeneficiaries(minerAddress, beneficiaryFromParam)
-  let txRewardReceiver   = beneficiaryFromParam
+  let beneficiaryAddress = resolveBeneficiaries(minerAddress)
 
   let protocolPart    = PROTOPARTX8
   let beneficiaryPart  = BENPARTX8
@@ -93,7 +91,6 @@ func distributeMinerReward(beneficiaryAddressStr: String) = {
   let protocolAmt = minedAmt - beneficiaryAmt
 
   [ScriptTransfer(beneficiaryAddress,    beneficiaryAmt, unit),
-    ScriptTransfer(neutrinoAddress,     protocolAmt,  unit),
-    ScriptTransfer(txRewardReceiver,  callReward,    unit)
+    ScriptTransfer(neutrinoAddress,     protocolAmt,  unit)
   ]
 }
