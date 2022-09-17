@@ -28,7 +28,7 @@ func verify() = {
   match (tx) {
       case inv:InvokeScriptTransaction => {
         if (inv.fee > 5 * MULT8 / 1000) then throw("InvokeScriptTransaction - fee amount is greater than max allowed: " + inv.fee.toString()) else
-        if (isDefined(inv.feeAssetId)) then throw("InvokeScriptTransaction - only WAVES is allowed as feeAssetId") else
+        if (isDefined(inv.feeAssetId)) then throw("InvokeScriptTransaction - only ANOTE is allowed as feeAssetId") else
 
         if (inv.dApp.addressFromRecipient() == nodeRegistry) then {
           true

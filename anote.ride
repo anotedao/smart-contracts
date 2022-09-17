@@ -61,7 +61,7 @@ func constructor(depositAmount: Int, neutrinoAddressStr: String, masterNodeAddre
 
 @Callable(i)
 func distributeMinerReward() = {
-  let minDistributeAmount = this.getInteger(keyMinDistributeAmount()).valueOrElse(2 * MULT8)
+  let minDistributeAmount = this.getInteger(keyMinDistributeAmount()).valueOrElse(MULT8)
   if (i.payments.size() != 1) then throw("exact 1 payment must be attached") else
   if (i.caller != i.originCaller) then throw("dapp to dapp calls are not allowed") else
   let pmt = i.payments[0]
@@ -72,9 +72,9 @@ func distributeMinerReward() = {
   let callReward = feeAmt * 3
   let minedAmt = pmt.amount - callReward
 
-  if (pmt.amount != minDistributeAmount) then throw("attached payment must be exact " + minDistributeAmount.toString() + " Wavelets") else
-  if (pmtAssetId != ANOTEID) then throw("only Waves can be used in payment") else
-  if (feeAssetId != ANOTEID) then throw("only Waves can be used in fees") else
+  if (pmt.amount != minDistributeAmount) then throw("attached payment must be exact " + minDistributeAmount.toString() + " Anotelets") else
+  if (pmtAssetId != ANOTEID) then throw("only Anotes can be used in payment") else
+  if (feeAssetId != ANOTEID) then throw("only Anotes can be used in fees") else
   if (feeAmt != 5 * MULT8 / 1000) then throw("fee amount couldn't exceed 0.005") else
 #   let neutrinoAddress = keyNeutrinoAddressStr().getAddressOrFail()
   let neutrinoAddress = ANOTEADDR
