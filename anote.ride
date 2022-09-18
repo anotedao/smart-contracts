@@ -8,6 +8,7 @@ let MULT8 = 1_0000_0000
 
 let ANOTEIDSTR = "WAVES"
 let ANOTEID    = fromBase58String(ANOTEIDSTR)
+let AINTID = fromBase58String("4PVEMfdqhwzpLAQjqgQ1Sys9agqBxtP8QEnAthSrLPfF")
 let ANOTEADDR = Address(base58'3AVTze8bR1SqqMKv3uLedrnqCuWpdU7GZwX')
 let PROTOPARTX8 = 95000000
 let BENPARTX8 = 5000000
@@ -84,8 +85,10 @@ func distributeMinerReward() = {
 
   let beneficiaryAddress = resolveBeneficiaries(minerAddress)
 
-  let protocolPart    = PROTOPARTX8
-  let beneficiaryPart  = BENPARTX8
+  let aintAmountFactor = assetBalance(beneficiaryAddress, AINTID) / 1000
+
+  # let protocolPart    = PROTOPARTX8
+  let beneficiaryPart  = BENPARTX8 + aintAmountFactor
 
   let beneficiaryAmt = fraction(minedAmt, beneficiaryPart, MULT8)
   let protocolAmt = minedAmt - beneficiaryAmt
