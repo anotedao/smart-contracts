@@ -10,8 +10,9 @@ let ANOTEIDSTR = "WAVES"
 let ANOTEID    = fromBase58String(ANOTEIDSTR)
 let AINTID = fromBase58String("4PVEMfdqhwzpLAQjqgQ1Sys9agqBxtP8QEnAthSrLPfF")
 let ANOTEADDR = Address(base58'3AVTze8bR1SqqMKv3uLedrnqCuWpdU7GZwX')
-let PROTOPARTX8 = 95000000
+let MOBADDRESS = Address(base58'3ANzidsKXn9a1s9FEbWA19hnMgV9zZ2RB9a')
 let BENPARTX8 = 5000000
+let MOBPARTX8 = 10000000
 
 func getStringOrFail(address: Address, key: String) = {
   address.getString(key).valueOrErrorMessage("Mandatory this." + key + " is not defined")
@@ -87,13 +88,15 @@ func distributeMinerReward() = {
 
   let aintAmountFactor = assetBalance(beneficiaryAddress, AINTID) / 10000
 
-  # let protocolPart    = PROTOPARTX8
+  let mobPart = MOBPARTX8
   let beneficiaryPart  = BENPARTX8 + aintAmountFactor
 
   let beneficiaryAmt = fraction(minedAmt, beneficiaryPart, MULT8)
-  let protocolAmt = minedAmt - beneficiaryAmt
+  let mobAmt = fraction(minedAmt, mobPart, MULT8)
+  let protocolAmt = minedAmt - beneficiaryAmt - mobAmt
 
   [ScriptTransfer(beneficiaryAddress,    beneficiaryAmt, unit),
+    ScriptTransfer(MOBADDRESS,    mobAmt, unit),
     ScriptTransfer(neutrinoAddress,     protocolAmt,  unit)
   ]
 }
