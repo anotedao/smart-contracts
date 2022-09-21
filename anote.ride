@@ -85,7 +85,7 @@ func distributeMinerReward() = {
 
   let beneficiaryAddress = resolveBeneficiaries(minerAddress)
 
-  let aintAmountFactor = assetBalance(beneficiaryAddress, AINTID) / 1000
+  let aintAmountFactor = assetBalance(beneficiaryAddress, AINTID) / 10000
 
   # let protocolPart    = PROTOPARTX8
   let beneficiaryPart  = BENPARTX8 + aintAmountFactor
