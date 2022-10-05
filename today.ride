@@ -1,0 +1,14 @@
+{-# STDLIB_VERSION 5 #-}
+{-# CONTENT_TYPE DAPP #-}
+{-# SCRIPT_TYPE ACCOUNT #-}
+
+let SEP = "__"
+
+@Callable(i)
+func bid() = {
+    let adKey = "%s__" + toString(i.caller)
+    if (i.payments.size() != 1) then throw("exact 1 payment must be attached") else
+    let alreadyPaid = getInteger(adKey).valueOrElse(0)
+    let amount = alreadyPaid + i.payments[0].amount
+    [IntegerEntry(adKey, amount)]
+}
