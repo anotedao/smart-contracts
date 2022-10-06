@@ -11,6 +11,7 @@ let ANOTEID    = fromBase58String(ANOTEIDSTR)
 let AINTID = fromBase58String("4PVEMfdqhwzpLAQjqgQ1Sys9agqBxtP8QEnAthSrLPfF")
 let ANOTEADDR = Address(base58'3AVTze8bR1SqqMKv3uLedrnqCuWpdU7GZwX')
 let MOBADDRESS = Address(base58'3ANzidsKXn9a1s9FEbWA19hnMgV9zZ2RB9a')
+let STAKEADDRESS = Address(base58'3ACyYVfFcyco4RS8WLbyRSGPHPeCCiUuSqP')
 let BENPARTX8 = 5000000
 let MOBPARTX8 = 10000000
 
@@ -86,7 +87,9 @@ func distributeMinerReward() = {
 
   let beneficiaryAddress = resolveBeneficiaries(minerAddress)
 
-  let aintAmountFactor = assetBalance(beneficiaryAddress, AINTID) / 10000
+  # let aintAmountFactor = assetBalance(beneficiaryAddress, AINTID) / 10000
+  let stakeKey = "%s__" + toString(i.caller)
+  let aintAmountFactor = getInteger(STAKEADDRESS, stakeKey).valueOrElse(0) / 2000
 
   let mobPart = MOBPARTX8
   let beneficiaryPart  = BENPARTX8 + aintAmountFactor
