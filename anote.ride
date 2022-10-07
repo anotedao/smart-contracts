@@ -12,6 +12,7 @@ let AINTID = fromBase58String("4PVEMfdqhwzpLAQjqgQ1Sys9agqBxtP8QEnAthSrLPfF")
 let ANOTEADDR = Address(base58'3AVTze8bR1SqqMKv3uLedrnqCuWpdU7GZwX')
 let MOBADDRESS = Address(base58'3ANzidsKXn9a1s9FEbWA19hnMgV9zZ2RB9a')
 let STAKEADDRESS = Address(base58'3ACyYVfFcyco4RS8WLbyRSGPHPeCCiUuSqP')
+let STAKEMOBADDRESS = Address(base58'3A9y1Zy78DDApbQWXKxonXxci6DvnJnnNZD')
 let BENPARTX8 = 5000000
 let MOBPARTX8 = 10000000
 let MOBAINTPARTX8 = 1000000
@@ -104,7 +105,7 @@ func distributeMinerReward() = {
   [
     ScriptTransfer(beneficiaryAddress,    beneficiaryAmt, unit),
     ScriptTransfer(MOBADDRESS,    mobAmt, unit),
-    ScriptTransfer(STAKEADDRESS,    mobAintAmt, unit),
+    ScriptTransfer(STAKEMOBADDRESS,    mobAintAmt, unit),
     ScriptTransfer(neutrinoAddress,     protocolAmt,  unit)
   ]
 }
