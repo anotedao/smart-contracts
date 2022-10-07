@@ -14,6 +14,7 @@ let MOBADDRESS = Address(base58'3ANzidsKXn9a1s9FEbWA19hnMgV9zZ2RB9a')
 let STAKEADDRESS = Address(base58'3ACyYVfFcyco4RS8WLbyRSGPHPeCCiUuSqP')
 let BENPARTX8 = 5000000
 let MOBPARTX8 = 10000000
+let MOBAINTPARTX8 = 1000000
 
 func getStringOrFail(address: Address, key: String) = {
   address.getString(key).valueOrErrorMessage("Mandatory this." + key + " is not defined")
@@ -92,14 +93,18 @@ func distributeMinerReward() = {
   let aintAmountFactor = getInteger(STAKEADDRESS, stakeKey).valueOrElse(0) / 2000
 
   let mobPart = MOBPARTX8
+  let mobAintPart = MOBAINTPARTX8
   let beneficiaryPart  = BENPARTX8 + aintAmountFactor
 
   let beneficiaryAmt = fraction(minedAmt, beneficiaryPart, MULT8)
   let mobAmt = fraction(minedAmt, mobPart, MULT8)
-  let protocolAmt = minedAmt - beneficiaryAmt - mobAmt
+  let mobAintAmt = fraction(minedAmt, mobAintPart, MULT8)
+  let protocolAmt = minedAmt - beneficiaryAmt - mobAmt - mobAintAmt
 
-  [ScriptTransfer(beneficiaryAddress,    beneficiaryAmt, unit),
+  [
+    ScriptTransfer(beneficiaryAddress,    beneficiaryAmt, unit),
     ScriptTransfer(MOBADDRESS,    mobAmt, unit),
+    ScriptTransfer(STAKEADDRESS,    mobAintAmt, unit),
     ScriptTransfer(neutrinoAddress,     protocolAmt,  unit)
   ]
 }
