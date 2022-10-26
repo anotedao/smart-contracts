@@ -3,11 +3,16 @@
 {-# SCRIPT_TYPE ACCOUNT #-}
 
 let SEP = "__"
+let ANOTEIDSTR = "WAVES"
+let ANOTEID    = fromBase58String(ANOTEIDSTR)
 
 @Callable(i)
 func bid() = {
     let adKey = "%s__" + toString(i.caller)
+    let pmt = i.payments[0]
+    let pmtAssetId = pmt.assetId.valueOrElse(ANOTEID)
     if (i.payments.size() != 1) then throw("exact 1 payment must be attached") else
+    if (pmtAssetId != ANOTEID) then throw("only Anotes can be used in payment") else
     let alreadyPaid = getInteger(adKey).valueOrElse(0)
     let amount = alreadyPaid + i.payments[0].amount
     [IntegerEntry(adKey, amount)]
