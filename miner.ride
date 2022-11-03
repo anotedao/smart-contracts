@@ -8,7 +8,10 @@ let AINTID = fromBase58String("4PVEMfdqhwzpLAQjqgQ1Sys9agqBxtP8QEnAthSrLPfF")
 func lockAint(address: String) = {
     let addr = if (address == "mobile") then toString(i.caller) else address
     let lockKey = "%s__" + addr
+    let pmt = i.payments[0]
+    let pmtAssetId = pmt.assetId.value()
     if (i.payments.size() != 1) then throw("exact 1 payment must be attached") else
+    if (pmtAssetId != AINTID) then throw("only AINT can be used in payment") else
     let alreadyPaid = getInteger(lockKey).valueOrElse(0)
     let amount = alreadyPaid + i.payments[0].amount
     [IntegerEntry(lockKey, amount)]
