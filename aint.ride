@@ -1,0 +1,22 @@
+{-# STDLIB_VERSION 5 #-}
+{-# CONTENT_TYPE DAPP #-}
+{-# SCRIPT_TYPE ACCOUNT #-}
+
+let AINTID = fromBase58String("4PVEMfdqhwzpLAQjqgQ1Sys9agqBxtP8QEnAthSrLPfF")
+
+let MULT8 = 1_0000_0000
+
+func keyBeneficiaryAddress() = "%s__beneficiaryAddress"
+
+func keyPrice() = "%s__price"
+
+@Callable(i)
+func constructor(beneficiaryAddressStr58: String) = {
+  if (this != i.caller) then throw("permissions denied") else
+  
+  let beneficiaryAddress = beneficiaryAddressStr58.addressFromStringValue()
+  let price = getInteger(keyPrice()).valueOrElse(MULT8)
+
+  [StringEntry(keyBeneficiaryAddress(), beneficiaryAddress.toString()),
+  IntegerEntry(keyPrice(), price)]
+}
