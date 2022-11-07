@@ -6,6 +6,7 @@ let AINTID = fromBase58String("66DUhUoJaoZcstkKpcoN3FUcqjB6v8VJd5ZQd6RsPxhv")
 let WAVESIDSTR = "WAVES"
 let WAVESID    = fromBase58String(WAVESIDSTR)
 let MULT8 = 1_0000_0000
+let PRICESTEP = 100000
 let SEP = "__"
 
 func keyBeneficiaryAddress() = "%s__beneficiaryAddress"
@@ -75,20 +76,30 @@ func mint() = {
     let addressBeneficiary = getStringValue(keyBeneficiaryAddress()).addressFromStringValue()
     let amountAint = fraction(amount, MULT8, price)
 
-    let amountAintFinal = if (tier >= amountAint) then tier else amountAint
+    let amountAintFinal = if (tier >= amountAint) then amountAint else tier
     let tierNew = if (tier >= amountAint) then tier - amountAint else MULT8 * 10
+    let priceNew = if (tier >= amountAint) then price else price + PRICESTEP
+    let returnAmount = if (tier >= amountAint) then 0 else amount - fraction(amount, MULT8, price)
+    let amountBeneficirary = if (tier >= amountAint) then amount else amount - returnAmount
 
-    [
+    let preExecute = [
         ScriptTransfer(i.caller, amountAintFinal, AINTID),
-        ScriptTransfer(addressBeneficiary, amount, unit),
-        IntegerEntry(keyTier(), tierNew),
-        IntegerEntry(keyPrice(), price)
+        ScriptTransfer(addressBeneficiary, amountBeneficirary, unit),
+        IntegerEntry(keyTier(), tierNew)
     ]
+
+    let execute = if (tier >= amountAint) then preExecute else
+        preExecute ++ [
+            IntegerEntry(keyPrice(), priceNew),
+            ScriptTransfer(i.caller, returnAmount, unit)
+        ]
+
+    execute
 }
 
-@Callable(i)
-func test() = {
-    [
-        DeleteEntry("test")
-    ]
-}
+# @Callable(i)
+# func test() = {
+#     [
+#         IntegerEntry(keyTier(), PRICESTEP * 10)
+#     ]
+# }

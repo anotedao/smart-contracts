@@ -10,11 +10,16 @@ func lockAint(address: String) = {
     let lockKey = "%s__" + addr
     let pmt = i.payments[0]
     let pmtAssetId = pmt.assetId.value()
+
     if (i.payments.size() != 1) then throw("exact 1 payment must be attached") else
     if (pmtAssetId != AINTID) then throw("only AINT can be used in payment") else
-    let alreadyPaid = getInteger(lockKey).valueOrElse(0)
-    let amount = alreadyPaid + i.payments[0].amount
-    [IntegerEntry(lockKey, amount)]
+
+    let alreadyLocked = getInteger(lockKey).valueOrElse(0)
+    let amount = alreadyLocked + i.payments[0].amount
+
+    [
+        IntegerEntry(lockKey, amount)
+    ]
 }
 
 @Callable(i)
@@ -22,7 +27,9 @@ func unlockAint(address: String, amount: Int) = {
     let addr = if (address == "mobile") then toString(i.caller) else address
     let lockKey = "%s__" + addr
     let total = getInteger(lockKey).valueOrElse(0)
+
     if (amount > total) then throw("amount is too big") else
+
     [
         IntegerEntry(lockKey, total - amount),
         ScriptTransfer(i.caller, amount,  AINTID)
