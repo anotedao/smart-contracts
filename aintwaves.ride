@@ -8,8 +8,8 @@ let MULT8 = 1_0000_0000
 let SEP = "__"
 
 func keyBeneficiaryAddress() = "%s__beneficiaryAddress"
-
 func keyPrice() = "%s__price"
+func keyTier() = "%s__tier"
 
 @Callable(i)
 func constructor(beneficiaryAddressStr58: String) = {
@@ -17,6 +17,7 @@ func constructor(beneficiaryAddressStr58: String) = {
   
     let beneficiaryAddress = beneficiaryAddressStr58.addressFromStringValue()
     let price = getInteger(keyPrice()).valueOrElse(MULT8)
+    let tier = getInteger(keyTier()).valueOrElse(MULT8 * 10)
 
     [
         StringEntry(keyBeneficiaryAddress(), beneficiaryAddress.toString()),
