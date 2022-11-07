@@ -1,0 +1,43 @@
+{-# STDLIB_VERSION 5 #-}
+{-# CONTENT_TYPE DAPP #-}
+{-# SCRIPT_TYPE ACCOUNT #-}
+
+# let AINTID = fromBase58String("4PVEMfdqhwzpLAQjqgQ1Sys9agqBxtP8QEnAthSrLPfF")
+let AINTID = fromBase58String("66DUhUoJaoZcstkKpcoN3FUcqjB6v8VJd5ZQd6RsPxhv")
+let SEP = "__"
+
+@Callable(i)
+func depositContract(hash: String, amount: Int) = {
+    let key = "%s__" + toString(i.caller)
+    let val = "%s%s__" + hash + SEP + height.toString() + SEP + amount.toString()
+
+    [
+        StringEntry(key, val)
+    ]
+}
+
+@Callable(i)
+func claim(secret: String) = {
+    let key = "%s__" + toString(i.caller)
+    let val = getStringValue(key)
+    let hash = val.split(SEP)[1]
+    let h = parseBigIntValue(val.split(SEP)[2]).toInt()
+    let amount = parseIntValue(val.split(SEP)[3])
+    
+    if keccak256(blake2b256(secret.toBytes())).toBase58String() != hash then throw("secret is wrong") else
+    if height - h < 5 then throw("too early to claim") else
+
+    [
+        DeleteEntry(key),
+        ScriptTransfer(i.caller, amount, AINTID)
+    ]
+}
+
+@Callable(i)
+func cancel(address: String) = {
+    let key = "%s__" + address
+
+    [
+        DeleteEntry(key)
+    ]
+}
