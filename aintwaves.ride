@@ -2,6 +2,7 @@
 {-# CONTENT_TYPE DAPP #-}
 {-# SCRIPT_TYPE ACCOUNT #-}
 
+let AINTID = fromBase58String("66DUhUoJaoZcstkKpcoN3FUcqjB6v8VJd5ZQd6RsPxhv")
 let WAVESIDSTR = "WAVES"
 let WAVESID    = fromBase58String(WAVESIDSTR)
 let MULT8 = 1_0000_0000
@@ -21,6 +22,7 @@ func constructor(beneficiaryAddressStr58: String) = {
 
     [
         StringEntry(keyBeneficiaryAddress(), beneficiaryAddress.toString()),
+        IntegerEntry(keyTier(), tier),
         IntegerEntry(keyPrice(), price)
     ]
 }
@@ -56,5 +58,37 @@ func refund(secret: String) = {
     [
         DeleteEntry(key),
         ScriptTransfer(i.caller, amount, WAVESID)
+    ]
+}
+
+@Callable(i)
+func mint() = {
+    let pmt = i.payments[0]
+    let pmtAssetId = pmt.assetId.valueOrElse(WAVESID)
+    let amount = pmt.amount
+
+    if (i.payments.size() != 1) then throw("exact 1 payment must be attached") else
+    if (pmtAssetId != WAVESID) then throw("only WAVES can be used in payment") else
+
+    let price = getIntegerValue(keyPrice())
+    let tier = getIntegerValue(keyTier())
+    let addressBeneficiary = getStringValue(keyBeneficiaryAddress()).addressFromStringValue()
+    let amountAint = fraction(amount, MULT8, price)
+
+    let amountAintFinal = if (tier >= amountAint) then tier else amountAint
+    let tierNew = if (tier >= amountAint) then tier - amountAint else MULT8 * 10
+
+    [
+        ScriptTransfer(i.caller, amountAintFinal, AINTID),
+        ScriptTransfer(addressBeneficiary, amount, unit),
+        IntegerEntry(keyTier(), tierNew),
+        IntegerEntry(keyPrice(), price)
+    ]
+}
+
+@Callable(i)
+func test() = {
+    [
+        DeleteEntry("test")
     ]
 }
