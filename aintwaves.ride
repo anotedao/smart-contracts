@@ -2,11 +2,12 @@
 {-# CONTENT_TYPE DAPP #-}
 {-# SCRIPT_TYPE ACCOUNT #-}
 
-let AINTID = fromBase58String("66DUhUoJaoZcstkKpcoN3FUcqjB6v8VJd5ZQd6RsPxhv")
+let AINTID = fromBase58String("BvuzJNB6qUrvEmzGt1PMBZ1QCnBNn2L7ezXHhgQKMxr7")
+# let AINTID = fromBase58String("66DUhUoJaoZcstkKpcoN3FUcqjB6v8VJd5ZQd6RsPxhv")
 let WAVESIDSTR = "WAVES"
 let WAVESID    = fromBase58String(WAVESIDSTR)
 let MULT8 = 1_0000_0000
-let PRICESTEP = 100000
+let PRICESTEP = MULT8 / 100
 let SEP = "__"
 
 func keyBeneficiaryAddress() = "%s__beneficiaryAddress"
@@ -18,8 +19,8 @@ func constructor(beneficiaryAddressStr58: String) = {
     if (this != i.caller) then throw("permissions denied") else
   
     let beneficiaryAddress = beneficiaryAddressStr58.addressFromStringValue()
-    let price = getInteger(keyPrice()).valueOrElse(MULT8)
-    let tier = getInteger(keyTier()).valueOrElse(MULT8 * 10)
+    let price = MULT8
+    let tier = MULT8 * 10
 
     [
         StringEntry(keyBeneficiaryAddress(), beneficiaryAddress.toString()),
@@ -74,13 +75,15 @@ func mint() = {
     let price = getIntegerValue(keyPrice())
     let tier = getIntegerValue(keyTier())
     let addressBeneficiary = getStringValue(keyBeneficiaryAddress()).addressFromStringValue()
-    let amountAint = fraction(amount, MULT8, price)
+    let amountAint = fraction(amount, MULT8, price, CEILING)
 
-    let amountAintFinal = if (tier >= amountAint) then amountAint else tier
-    let tierNew = if (tier >= amountAint) then tier - amountAint else MULT8 * 10
-    let priceNew = if (tier >= amountAint) then price else price + PRICESTEP
-    let returnAmount = if (tier >= amountAint) then 0 else amount - fraction(amount, MULT8, price)
-    let amountBeneficirary = if (tier >= amountAint) then amount else amount - returnAmount
+    let amountAintFinal = if (tier > amountAint) then amountAint else tier
+    let tierNew = if (tier > amountAint) then tier - amountAint else MULT8 * 10
+    let priceNew = if (tier > amountAint) then price else price + PRICESTEP
+    let amountBeneficirary = if (tier >= amountAint) then amount else amount - fraction(amountAintFinal, price, MULT8, FLOOR)
+    let returnAmount = if (tier >= amountAint) then 0 else amount - amountBeneficirary
+
+    let st = ScriptTransfer(i.caller, amountAintFinal, AINTID)
 
     let preExecute = [
         ScriptTransfer(i.caller, amountAintFinal, AINTID),
@@ -88,7 +91,7 @@ func mint() = {
         IntegerEntry(keyTier(), tierNew)
     ]
 
-    let execute = if (tier >= amountAint) then preExecute else
+    let execute = if (tier > amountAint) then preExecute else
         preExecute ++ [
             IntegerEntry(keyPrice(), priceNew),
             ScriptTransfer(i.caller, returnAmount, unit)
