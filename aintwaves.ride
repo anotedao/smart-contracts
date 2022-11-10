@@ -20,7 +20,7 @@ func constructor(beneficiaryAddressStr58: String) = {
   
     let beneficiaryAddress = beneficiaryAddressStr58.addressFromStringValue()
     let price = MULT8
-    let tier = MULT8 * 10
+    let tier = MULT8 * 100
 
     [
         StringEntry(keyBeneficiaryAddress(), beneficiaryAddress.toString()),
@@ -78,7 +78,7 @@ func mint() = {
     let amountAint = fraction(amount, MULT8, price, CEILING)
 
     let amountAintFinal = if (tier > amountAint) then amountAint else tier
-    let tierNew = if (tier > amountAint) then tier - amountAint else MULT8 * 10
+    let tierNew = if (tier > amountAint) then tier - amountAint else MULT8 * 100
     let priceNew = if (tier > amountAint) then price else price + PRICESTEP
     let amountBeneficirary = if (tier >= amountAint) then amount else amount - fraction(amountAintFinal, price, MULT8, FLOOR)
     let returnAmount = if (tier >= amountAint) then 0 else amount - amountBeneficirary
