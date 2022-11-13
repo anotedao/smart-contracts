@@ -7,7 +7,7 @@ let SEP = "__"
 
 @Callable(i)
 func lockAint(node: String) = {
-    let lockKey = "%s__" + toString(i.caller)
+    let lockKey = "%s" + SEP + if (node == "mobile") then toString(i.caller) else node
     let pmt = i.payments[0]
     let pmtAssetId = pmt.assetId.value()
 
@@ -17,7 +17,7 @@ func lockAint(node: String) = {
     let val = getStringValue(lockKey)
     let alreadyLocked = parseIntValue(split(val, SEP)[1]).valueOrElse(0)
     let amount = alreadyLocked + i.payments[0].amount
-    let newVal = "%d%s" + SEP + toString(amount) + SEP + node
+    let newVal = "%d%s" + SEP + toString(amount) + SEP + toString(i.caller)
 
     [
         StringEntry(lockKey, newVal)
@@ -26,14 +26,15 @@ func lockAint(node: String) = {
 
 @Callable(i)
 func unlockAint(node: String, amount: Int) = {
-    let lockKey = "%s__" + toString(i.caller)
+    let lockKey = "%s" + SEP + if (node == "mobile") then toString(i.caller) else node
     let val = getStringValue(lockKey)
     let alreadyLocked = parseIntValue(split(val, SEP)[1]).valueOrElse(0)
+    let newVal = "%d%s" + SEP + toString(alreadyLocked - amount) + SEP + toString(i.caller)
 
     if (amount > alreadyLocked) then throw("amount is too big") else
 
     [
-        IntegerEntry(lockKey, alreadyLocked - amount),
+        StringEntry(lockKey, newVal),
         ScriptTransfer(i.caller, amount,  AINTID)
     ]
 }
