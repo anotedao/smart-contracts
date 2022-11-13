@@ -3,35 +3,37 @@
 {-# SCRIPT_TYPE ACCOUNT #-}
 
 let AINTID = fromBase58String("4PVEMfdqhwzpLAQjqgQ1Sys9agqBxtP8QEnAthSrLPfF")
+let SEP = "__"
 
 @Callable(i)
-func lockAint(address: String) = {
-    let addr = if (address == "mobile") then toString(i.caller) else address
-    let lockKey = "%s__" + addr
+func lockAint(node: String) = {
+    let lockKey = "%s__" + toString(i.caller)
     let pmt = i.payments[0]
     let pmtAssetId = pmt.assetId.value()
 
     if (i.payments.size() != 1) then throw("exact 1 payment must be attached") else
     if (pmtAssetId != AINTID) then throw("only AINT can be used in payment") else
 
-    let alreadyLocked = getInteger(lockKey).valueOrElse(0)
+    let val = getStringValue(lockKey)
+    let alreadyLocked = parseIntValue(split(val, SEP)[1]).valueOrElse(0)
     let amount = alreadyLocked + i.payments[0].amount
+    let newVal = "%d%s" + SEP + toString(amount) + SEP + node
 
     [
-        IntegerEntry(lockKey, amount)
+        StringEntry(lockKey, newVal)
     ]
 }
 
 @Callable(i)
-func unlockAint(address: String, amount: Int) = {
-    let addr = if (address == "mobile") then toString(i.caller) else address
-    let lockKey = "%s__" + addr
-    let total = getInteger(lockKey).valueOrElse(0)
+func unlockAint(node: String, amount: Int) = {
+    let lockKey = "%s__" + toString(i.caller)
+    let val = getStringValue(lockKey)
+    let alreadyLocked = parseIntValue(split(val, SEP)[1]).valueOrElse(0)
 
-    if (amount > total) then throw("amount is too big") else
+    if (amount > alreadyLocked) then throw("amount is too big") else
 
     [
-        IntegerEntry(lockKey, total - amount),
+        IntegerEntry(lockKey, alreadyLocked - amount),
         ScriptTransfer(i.caller, amount,  AINTID)
     ]
 }
