@@ -14,7 +14,7 @@ func lockAint(node: String) = {
     if (i.payments.size() != 1) then throw("exact 1 payment must be attached") else
     if (pmtAssetId != AINTID) then throw("only AINT can be used in payment") else
 
-    let val = getStringValue(lockKey)
+    let val = getStringValue(lockKey).valueOrElse("")
     let alreadyLocked = parseIntValue(split(val, SEP)[1]).valueOrElse(0)
     let amount = alreadyLocked + i.payments[0].amount
     let newVal = "%d%s" + SEP + toString(amount) + SEP + toString(i.caller)
@@ -27,7 +27,7 @@ func lockAint(node: String) = {
 @Callable(i)
 func unlockAint(node: String, amount: Int) = {
     let lockKey = "%s" + SEP + if (node == "mobile") then toString(i.caller) else node
-    let val = getStringValue(lockKey)
+    let val = getStringValue(lockKey).valueOrElse("")
     let alreadyLocked = parseIntValue(split(val, SEP)[1]).valueOrElse(0)
     let newVal = "%d%s" + SEP + toString(alreadyLocked - amount) + SEP + toString(i.caller)
 
