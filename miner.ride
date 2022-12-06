@@ -15,7 +15,7 @@ func lockAint(node: String) = {
     if (pmtAssetId != AINTID) then throw("only AINT can be used in payment") else
 
     let val = getString(lockKey).valueOrElse("")
-    let alreadyLocked = parseIntValue(split(val, SEP)[1]).valueOrElse(0)
+    let alreadyLocked = if (val != "") then parseInt(split(val, SEP)[1]).valueOrElse(0) else 0
     let amount = alreadyLocked + i.payments[0].amount
     let newVal = "%d%s" + SEP + toString(amount) + SEP + toString(i.caller)
 
@@ -28,7 +28,7 @@ func lockAint(node: String) = {
 func unlockAint(node: String, amount: Int) = {
     let lockKey = "%s" + SEP + if (node == "mobile") then toString(i.caller) else node
     let val = getString(lockKey).valueOrElse("")
-    let alreadyLocked = parseIntValue(split(val, SEP)[1]).valueOrElse(0)
+    let alreadyLocked = if (val != "") then parseInt(split(val, SEP)[1]).valueOrElse(0) else 0
     let newVal = "%d%s" + SEP + toString(alreadyLocked - amount) + SEP + toString(i.caller)
 
     if (amount > alreadyLocked) then throw("amount is too big") else

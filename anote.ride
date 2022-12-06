@@ -91,7 +91,8 @@ func distributeMinerReward() = {
 
   # let aintAmountFactor = assetBalance(beneficiaryAddress, AINTID) / 10000
   let stakeKey = "%s__" + toString(i.caller)
-  let aintAmountFactor = getInteger(STAKEADDRESS, stakeKey).valueOrElse(0) / 2000
+  let aintAmountVal = getString(STAKEADDRESS, stakeKey).valueOrElse("%d%s__0__")
+  let aintAmountFactor = parseIntValue(split(aintAmountVal, SEP)[1]) / 2000
 
   let mobPart = MOBPARTX8
   let mobAintPart = MOBAINTPARTX8
