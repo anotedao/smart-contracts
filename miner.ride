@@ -2,7 +2,7 @@
 {-# CONTENT_TYPE DAPP #-}
 {-# SCRIPT_TYPE ACCOUNT #-}
 
-let AINTID = fromBase58String("4PVEMfdqhwzpLAQjqgQ1Sys9agqBxtP8QEnAthSrLPfF")
+let AINTID = fromBase58String("7paojf37ipks5Ac4rHMwtLHHe9YU6w8FBfafwoTEmmf9")
 let SEP = "__"
 
 @Callable(i)
