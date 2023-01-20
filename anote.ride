@@ -14,8 +14,8 @@ let MOBADDRESS = Address(base58'3ANzidsKXn9a1s9FEbWA19hnMgV9zZ2RB9a')
 let STAKEADDRESS = Address(base58'3A9y1Zy78DDApbQWXKxonXxci6DvnJnnNZD')
 let STAKEMOBADDRESS = Address(base58'3A9y1Zy78DDApbQWXKxonXxci6DvnJnnNZD')
 let BENPARTX8 = 1000000
-let MOBPARTX8 = 1000000
-let MOBAINTPARTX8 = 100000
+let MOBPARTX8 = 2000000
+let MOBAINTPARTX8 = 500000
 
 func getStringOrFail(address: Address, key: String) = {
   address.getString(key).valueOrErrorMessage("Mandatory this." + key + " is not defined")
