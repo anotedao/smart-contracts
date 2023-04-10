@@ -5,6 +5,7 @@
 let SEP = "__"
 let ANOTEIDSTR = "WAVES"
 let ANOTEID    = fromBase58String(ANOTEIDSTR)
+let MULT8 = 1_0000_0000
 
 @Callable(i)
 func bid() = {
@@ -13,6 +14,7 @@ func bid() = {
     let pmtAssetId = pmt.assetId.valueOrElse(ANOTEID)
     if (i.payments.size() != 1) then throw("exact 1 payment must be attached") else
     if (pmtAssetId != ANOTEID) then throw("only Anotes can be used in payment") else
+    if (i.payments[0].amount < MULT8) then throw("minimum bid is 1 ANOTE") else
     let alreadyPaid = getInteger(adKey).valueOrElse(0)
     let amount = alreadyPaid + i.payments[0].amount
     [IntegerEntry(adKey, amount)]
