@@ -11,10 +11,12 @@ let ANOTEID    = fromBase58String(ANOTEIDSTR)
 # let AINTID = fromBase58String("4PVEMfdqhwzpLAQjqgQ1Sys9agqBxtP8QEnAthSrLPfF")
 let ANOTEADDR = Address(base58'3AVTze8bR1SqqMKv3uLedrnqCuWpdU7GZwX')
 let MOBADDRESS = Address(base58'3ANzidsKXn9a1s9FEbWA19hnMgV9zZ2RB9a')
+let TELADDRESS = Address(base58'3AFnfAsxMsJdF9UF3JLVAzx3hjJcK5pguXd')
 let STAKEADDRESS = Address(base58'3A9y1Zy78DDApbQWXKxonXxci6DvnJnnNZD')
 let STAKEMOBADDRESS = Address(base58'3A9y1Zy78DDApbQWXKxonXxci6DvnJnnNZD')
 let BENPARTX8 = 1000000
 let MOBPARTX8 = 3000000
+let TELPARTX8 = 500000
 let MOBAINTPARTX8 = 500000
 
 func getStringOrFail(address: Address, key: String) = {
@@ -96,17 +98,20 @@ func distributeMinerReward() = {
   let aintAmountFactor = parseIntValue(split(aintAmountVal, SEP)[1]) / 50000
 
   let mobPart = MOBPARTX8
+  let telPart = TELPARTX8
   let mobAintPart = MOBAINTPARTX8
   let beneficiaryPart  = BENPARTX8 + aintAmountFactor
 
   let beneficiaryAmt = fraction(minedAmt, beneficiaryPart, MULT8)
   let mobAmt = fraction(minedAmt, mobPart, MULT8)
+  let telAmt = fraction(minedAmt, telPart, MULT8)
   let mobAintAmt = fraction(minedAmt, mobAintPart, MULT8)
-  let protocolAmt = minedAmt - beneficiaryAmt - mobAmt - mobAintAmt
+  let protocolAmt = minedAmt - beneficiaryAmt - mobAmt - telAmt - mobAintAmt
 
   [
     ScriptTransfer(beneficiaryAddress,    beneficiaryAmt, unit),
     ScriptTransfer(MOBADDRESS,    mobAmt, unit),
+    ScriptTransfer(TELADDRESS,    telAmt, unit),
     ScriptTransfer(STAKEMOBADDRESS,    mobAintAmt, unit),
     ScriptTransfer(neutrinoAddress,     protocolAmt,  unit)
   ]
