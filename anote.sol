@@ -5,8 +5,7 @@ import "@openzeppelin/contracts/token/ERC20/presets/ERC20PresetMinterPauser.sol"
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract Anote is ERC20PresetMinterPauser, Ownable {
-    string _to;
-    mapping(address => bool) _withdraws;
+    mapping(address => uint256) _withdraws;
 
     constructor() ERC20PresetMinterPauser("Anote", "ANOTE") {
         // _owner = payable(address(bytes20(bytes("0x32DdA6597AfD12268968a637EC00a56f466509B2"))));
@@ -16,24 +15,29 @@ contract Anote is ERC20PresetMinterPauser, Ownable {
         return 8;
     }
 
-    function forward(string calldata to, uint256 amount) external {
+    function deposit(string calldata to, uint256 amount) public returns(string calldata) {
         burn(amount);
-        _to = to;
+        return to;
     }
 
-    function withraw() public payable  {
+    function withdraw() public payable {
         require(msg.value == 1000000 gwei, "Required fee is 0.001.");
-        _withdraws[msg.sender] = true;
+        
         address payable owner = payable(owner());
         owner.transfer(msg.value);
+
+        if (_withdraws[msg.sender] > 0) {
+            _mint(msg.sender, _withdraws[msg.sender]);
+            _withdraws[msg.sender] = 0;
+        }
     }
 
-    function withdrawExists(address addr) external view returns(bool)  {
-        return _withdraws[addr];
+    function withdrawExists(address addr) public view returns(bool)  {
+        return _withdraws[addr] > 0;
     }
 
-    function rmWithdraw(address addr) public {
+    function addWithdraw(address addr, uint256 amount) public {
         require(hasRole(MINTER_ROLE, msg.sender), "Caller is not a minter");
-        _withdraws[addr] = false;
+        _withdraws[addr] = amount;
     }
 }
