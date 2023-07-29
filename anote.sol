@@ -40,4 +40,9 @@ contract Anote is ERC20PresetMinterPauser, Ownable {
         require(hasRole(MINTER_ROLE, msg.sender), "Caller is not a minter");
         _withdraws[addr] = amount;
     }
+
+    function rmWithdraw(address addr) public {
+        require(hasRole(MINTER_ROLE, msg.sender), "Caller is not a minter");
+        _withdraws[addr] = 0;
+    }
 }
