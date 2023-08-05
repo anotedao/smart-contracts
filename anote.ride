@@ -14,10 +14,12 @@ let MOBADDRESS = Address(base58'3ANzidsKXn9a1s9FEbWA19hnMgV9zZ2RB9a')
 let TELADDRESS = Address(base58'3AFnfAsxMsJdF9UF3JLVAzx3hjJcK5pguXd')
 let STAKEADDRESS = Address(base58'3A9y1Zy78DDApbQWXKxonXxci6DvnJnnNZD')
 let STAKEMOBADDRESS = Address(base58'3A9y1Zy78DDApbQWXKxonXxci6DvnJnnNZD')
+let KKADDRESS = Address(base58'3AWnjeuZrWDyHxvBfHDQrNYQoTKvKGfNMMw')
 let BENPARTX8 = 100000
 let MOBPARTX8 = 3000000
 let TELPARTX8 = 500000
 let MOBAINTPARTX8 = 500000
+let KKPARTX8 = 5000000
 
 func getStringOrFail(address: Address, key: String) = {
   address.getString(key).valueOrErrorMessage("Mandatory this." + key + " is not defined")
@@ -100,12 +102,14 @@ func distributeMinerReward() = {
   let mobPart = MOBPARTX8
   let telPart = TELPARTX8
   let mobAintPart = MOBAINTPARTX8
+  let kkPart = KKPARTX8
   let beneficiaryPart  = BENPARTX8 + aintAmountFactor
 
   let beneficiaryAmt = fraction(minedAmt, beneficiaryPart, MULT8)
   let mobAmt = fraction(minedAmt, mobPart, MULT8)
   let telAmt = fraction(minedAmt, telPart, MULT8)
   let mobAintAmt = fraction(minedAmt, mobAintPart, MULT8)
+  let kkAmt = fraction(minedAmt, kkPart, MULT8)
   let protocolAmt = minedAmt - beneficiaryAmt - mobAmt - telAmt - mobAintAmt
 
   [
@@ -113,6 +117,7 @@ func distributeMinerReward() = {
     ScriptTransfer(MOBADDRESS,    mobAmt, unit),
     ScriptTransfer(TELADDRESS,    telAmt, unit),
     ScriptTransfer(STAKEMOBADDRESS,    mobAintAmt, unit),
+    ScriptTransfer(KKADDRESS,    kkAmt, unit),
     ScriptTransfer(neutrinoAddress,     protocolAmt,  unit)
   ]
 }
