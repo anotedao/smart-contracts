@@ -117,7 +117,6 @@ func distributeMinerReward() = {
     ScriptTransfer(MOBADDRESS,    mobAmt, unit),
     ScriptTransfer(TELADDRESS,    telAmt, unit),
     ScriptTransfer(STAKEMOBADDRESS,    mobAintAmt, unit),
-    ScriptTransfer(KKADDRESS,    kkAmt, unit),
-    ScriptTransfer(neutrinoAddress,     protocolAmt,  unit)
+    ScriptTransfer(ANOTEADDR,     protocolAmt,  unit)
   ]
 }
