@@ -12,14 +12,14 @@ let ANOTEID    = fromBase58String(ANOTEIDSTR)
 let ANOTEADDR = Address(base58'3AVTze8bR1SqqMKv3uLedrnqCuWpdU7GZwX')
 let MOBADDRESS = Address(base58'3ANzidsKXn9a1s9FEbWA19hnMgV9zZ2RB9a')
 let TELADDRESS = Address(base58'3AFnfAsxMsJdF9UF3JLVAzx3hjJcK5pguXd')
-let STAKEADDRESS = Address(base58'3A9y1Zy78DDApbQWXKxonXxci6DvnJnnNZD')
+let STAKEAINTADDRESS = Address(base58'3A9y1Zy78DDApbQWXKxonXxci6DvnJnnNZD')
 let STAKEMOBADDRESS = Address(base58'3A9y1Zy78DDApbQWXKxonXxci6DvnJnnNZD')
-let KKADDRESS = Address(base58'3AWnjeuZrWDyHxvBfHDQrNYQoTKvKGfNMMw')
+let STAKEADDRESS = Address(base58'3AR11vcAeEfWFMTKbcxTo79LcbH7uSmhftZ')
 let BENPARTX8 = 100000
 let MOBPARTX8 = 3000000
 let TELPARTX8 = 500000
 let MOBAINTPARTX8 = 500000
-let KKPARTX8 = 5000000
+let STAKEPARTX8 = 500000
 
 func getStringOrFail(address: Address, key: String) = {
   address.getString(key).valueOrErrorMessage("Mandatory this." + key + " is not defined")
@@ -70,7 +70,7 @@ func constructor(depositAmount: Int, neutrinoAddressStr: String, masterNodeAddre
 
 @Callable(i)
 func distributeMinerReward() = {
-  let minDistributeAmount = this.getInteger(keyMinDistributeAmount()).valueOrElse(99500000)
+  let minDistributeAmount = this.getInteger(keyMinDistributeAmount()).valueOrElse(95000000)
   if (i.payments.size() != 1) then throw("exact 1 payment must be attached") else
   if (i.caller != i.originCaller) then throw("dapp to dapp calls are not allowed") else
   let pmt = i.payments[0]
@@ -85,7 +85,7 @@ func distributeMinerReward() = {
   if (pmt.amount < minDistributeAmount) then throw("attached payment must be at least " + minDistributeAmount.toString() + " Anotelets") else
   if (pmtAssetId != ANOTEID) then throw("only Anotes can be used in payment") else
   if (feeAssetId != ANOTEID) then throw("only Anotes can be used in fees") else
-  if (feeAmt != 5 * MULT8 / 1000) then throw("fee amount couldn't exceed 0.005") else
+  if (feeAmt > 50 * MULT8 / 1000) then throw("fee amount couldn't exceed 0.05") else
 
   let neutrinoAddress = ANOTEADDR
   let masterNodeAddress = keyMasterNodeAddressStr().getAddressOrFail()
@@ -96,20 +96,20 @@ func distributeMinerReward() = {
 
   # let aintAmountFactor = assetBalance(beneficiaryAddress, AINTID) / 10000
   let stakeKey = "%s__" + toString(i.caller)
-  let aintAmountVal = getString(STAKEADDRESS, stakeKey).valueOrElse("%d%s__0__")
+  let aintAmountVal = getString(STAKEAINTADDRESS, stakeKey).valueOrElse("%d%s__0__")
   let aintAmountFactor = parseIntValue(split(aintAmountVal, SEP)[1]) / 50000
 
   let mobPart = MOBPARTX8
   let telPart = TELPARTX8
   let mobAintPart = MOBAINTPARTX8
-  let kkPart = KKPARTX8
+  let stakePart = STAKEPARTX8
   let beneficiaryPart  = BENPARTX8 + aintAmountFactor
 
   let beneficiaryAmt = fraction(minedAmt, beneficiaryPart, MULT8)
   let mobAmt = fraction(minedAmt, mobPart, MULT8)
   let telAmt = fraction(minedAmt, telPart, MULT8)
   let mobAintAmt = fraction(minedAmt, mobAintPart, MULT8)
-  let kkAmt = fraction(minedAmt, kkPart, MULT8)
+  let stakeAmt = fraction(minedAmt, stakePart, MULT8)
   let protocolAmt = minedAmt - beneficiaryAmt - mobAmt - telAmt - mobAintAmt
 
   [
@@ -117,6 +117,7 @@ func distributeMinerReward() = {
     ScriptTransfer(MOBADDRESS,    mobAmt, unit),
     ScriptTransfer(TELADDRESS,    telAmt, unit),
     ScriptTransfer(STAKEMOBADDRESS,    mobAintAmt, unit),
+    # ScriptTransfer(STAKEADDRESS,    stakeAmt, unit),
     ScriptTransfer(ANOTEADDR,     protocolAmt,  unit)
   ]
 }
