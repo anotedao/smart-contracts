@@ -1,0 +1,41 @@
+{-# STDLIB_VERSION 5 #-}
+{-# CONTENT_TYPE DAPP #-}
+{-# SCRIPT_TYPE ACCOUNT #-}
+
+let ANOTEIDSTR = "WAVES"
+let ANOTEID    = fromBase58String(ANOTEIDSTR)
+let SEP = "__"
+
+@Callable(i)
+func lockAnote() = {
+    let lockKey = "%s" + SEP + toString(i.caller)
+    let pmt = i.payments[0]
+    let pmtAssetId = pmt.assetId.value()
+
+    if (i.payments.size() != 1) then throw("exact 1 payment must be attached") else
+    if (pmtAssetId != ANOTEID) then throw("only ANOTE can be used in payment") else
+
+    let val = getString(lockKey).valueOrElse("")
+    let alreadyLocked = if (val != "") then parseInt(split(val, SEP)[1]).valueOrElse(0) else 0
+    let amount = alreadyLocked + i.payments[0].amount
+    let newVal = "%d%s" + SEP + toString(amount) + SEP + toString(i.caller)
+
+    [
+        StringEntry(lockKey, newVal)
+    ]
+}
+
+@Callable(i)
+func unlockAnote(amount: Int) = {
+    let lockKey = "%s" + SEP + toString(i.caller)
+    let val = getString(lockKey).valueOrElse("")
+    let alreadyLocked = if (val != "") then parseInt(split(val, SEP)[1]).valueOrElse(0) else 0
+    let newVal = "%d%s" + SEP + toString(alreadyLocked - amount) + SEP + toString(i.caller)
+
+    if (amount > alreadyLocked) then throw("amount is too big") else
+
+    [
+        StringEntry(lockKey, newVal),
+        ScriptTransfer(i.caller, amount,  ANOTEID)
+    ]
+}
