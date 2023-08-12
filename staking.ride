@@ -10,7 +10,7 @@ let SEP = "__"
 func lockAnote() = {
     let lockKey = "%s" + SEP + toString(i.caller)
     let pmt = i.payments[0]
-    let pmtAssetId = pmt.assetId.value()
+    let pmtAssetId = pmt.assetId.valueOrElse(ANOTEID)
 
     if (i.payments.size() != 1) then throw("exact 1 payment must be attached") else
     if (pmtAssetId != ANOTEID) then throw("only ANOTE can be used in payment") else
@@ -36,6 +36,6 @@ func unlockAnote(amount: Int) = {
 
     [
         StringEntry(lockKey, newVal),
-        ScriptTransfer(i.caller, amount,  ANOTEID)
+        ScriptTransfer(i.caller, amount,  unit)
     ]
 }
