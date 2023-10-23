@@ -70,7 +70,7 @@ func mint() = {
     let amount = pmt.amount
 
     if (i.payments.size() != 1) then throw("exact 1 payment must be attached") else
-    if (pmtAssetId != WAVESID) then throw("only WAVES can be used in payment") else
+    if (pmtAssetId != WAVESID) then throw("only ANOTE can be used in payment") else
 
     let price = getIntegerValue(keyPrice())
     let tier = getIntegerValue(keyTier())
