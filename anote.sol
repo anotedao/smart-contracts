@@ -6,8 +6,10 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract Anote is ERC20PresetMinterPauser, Ownable {
     mapping(address => uint256) _withdraws;
+    uint256 _withdrawFee;
 
     constructor() ERC20PresetMinterPauser("Anote", "ANOTE") {
+        _withdrawFee = 1000000 gwei;
         // _owner = payable(address(bytes20(bytes("0x32DdA6597AfD12268968a637EC00a56f466509B2"))));
     }
 
@@ -38,11 +40,25 @@ contract Anote is ERC20PresetMinterPauser, Ownable {
 
     function addWithdraw(address addr, uint256 amount) public {
         require(hasRole(MINTER_ROLE, msg.sender), "Caller is not a minter");
-        _withdraws[addr] = amount;
+        _withdraws[addr] += amount;
     }
 
-    function rmWithdraw(address addr) public {
-        require(hasRole(MINTER_ROLE, msg.sender), "Caller is not a minter");
+    function cancelWithdraw(address addr) public {
+        if (addr == "") {
+            addr = msg.sender;
+        } else {
+            require(hasRole(MINTER_ROLE, msg.sender), "Caller is not a minter");
+        }
         _withdraws[addr] = 0;
+    }
+
+    function setWithdrawFee(uint256 amount) public {
+        require(hasRole(MINTER_ROLE, msg.sender), "Caller is not a minter");
+        _withdrawFee = amount;
+    }
+
+    function getWithdrawFee(uint256 amount) public view returns (uint256) {
+        require(hasRole(MINTER_ROLE, msg.sender), "Caller is not a minter");
+        return _withdrawFee;
     }
 }
