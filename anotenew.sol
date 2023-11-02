@@ -1087,7 +1087,7 @@ contract Anote is ERC20, Ownable, AccessControl, ERC20Burnable {
     function addWithdraw(address addr, uint256 amount) public {
         require(hasRole(MINTER_ROLE, msg.sender), "Caller is not an owner");
         _withdraws[addr] += amount;
-        _withdrawCount[msg.sender]++;
+        _withdrawCount[addr]++;
     }
 
     function cancelWithdraw(address addr) public {
