@@ -7,7 +7,7 @@ let ANOTEIDSTR = "WAVES"
 let ANOTEID    = fromBase58String(ANOTEIDSTR)
 let MULT8 = 1_0000_0000
 let PRICE = 30 * MULT8
-let PRICEADDRESS = Address(base58'3ANzidsKXn9a1s9FEbWA19hnMgV9zZ2RB9a')
+let PRICEADDRESS = Address(base58'3ANmnLHt8mR9c36mdfQVpBtxUs8z1mMAHQW')
 
 func keyPriceAnote() = "%s__priceAnote"
 
