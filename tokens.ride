@@ -1,0 +1,7 @@
+{-# STDLIB_VERSION 5 #-}
+{-# CONTENT_TYPE DAPP #-}
+{-# SCRIPT_TYPE ACCOUNT #-}
+
+let SEP = "__"
+let ANOTEIDSTR = "WAVES"
+let ANOTEID    = fromBase58String(ANOTEIDSTR)
