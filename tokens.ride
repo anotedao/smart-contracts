@@ -5,3 +5,26 @@
 let SEP = "__"
 let ANOTEIDSTR = "WAVES"
 let ANOTEID    = fromBase58String(ANOTEIDSTR)
+let MULT8 = 1_0000_0000
+let PRICE = 30 * MULT8
+let PRICEADDRESS = Address(base58'3ANzidsKXn9a1s9FEbWA19hnMgV9zZ2RB9a')
+
+func keyPriceAnote() = "%s__priceAnote"
+
+@Callable(i)
+func list(assetId: String) = {
+
+    let pmt = i.payments[0]
+    let pmtAssetId = pmt.assetId.valueOrElse(ANOTEID)
+    let priceAnote = getIntegerValue(PRICEADDRESS, keyPriceAnote())
+    let amount = pmt.amount
+    let amountUsd = fraction(amount, priceAnote, MULT8, CEILING)
+
+    if (i.payments.size() != 1) then throw("exact 1 payment must be attached") else
+    if (pmtAssetId != ANOTEID) then throw("only anotes can be used in payment") else
+    if (amountUsd < PRICE) then throw("the amount of anotes is too small") else
+
+    [
+        BooleanEntry(assetId, true)
+    ]
+}
