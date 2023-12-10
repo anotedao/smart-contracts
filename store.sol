@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.22;
+pragma solidity ^0.8.19;
 
 contract AnoteNodeStore {
 
@@ -14,8 +14,9 @@ contract AnoteNodeStore {
         _owner = msg.sender;
     }
 
-    function mintNode(string calldata addr) public payable {
+    function mintNode(string calldata addr) public payable returns(string calldata) {
         payable(_owner).transfer(msg.value);
+        return addr;
     }
 
 }
