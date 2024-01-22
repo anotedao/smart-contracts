@@ -1,0 +1,55 @@
+{-# STDLIB_VERSION 6 #-}
+{-# CONTENT_TYPE DAPP #-}
+{-# SCRIPT_TYPE ACCOUNT #-}
+
+let ANOTEIDSTR = "WAVES"
+let ANOTEID    = fromBase58String(ANOTEIDSTR)
+let MULT8 = 1_0000_0000
+let SEP = "__"
+let NODEID = fromBase58String("auiheGJjoLj6B41v6GChAeCzEUaj2UDFu5rDqbfNHew")
+
+@Callable(i)
+func leaseToNode(node: String, owner: String) = {
+
+  let pmt = i.payments[0]
+  let pmtAssetId = pmt.assetId.valueOrElse(ANOTEID)
+
+  if (i.payments.size() != 1) then throw("exact 1 payment must be attached") else
+  if (pmtAssetId != NODEID) then throw("you must pay with NODE token") else
+  if (pmt.amount != 1) then throw("you must pay with exactly 1 NODE token") else
+
+  let na = Address(fromBase58String(node))
+
+  let l1 = Lease(na, MULT8 * 1000, 1)
+  let l2 = Lease(na, MULT8 * 1000, 2)
+  let l3 = Lease(na, MULT8 * 1000, 3)
+  let l4 = Lease(na, MULT8 * 1000, 4)
+  let l5 = Lease(na, MULT8 * 1000, 5)
+
+  let l1id = calculateLeaseId(l1)
+  let l2id = calculateLeaseId(l2)
+  let l3id = calculateLeaseId(l3)
+  let l4id = calculateLeaseId(l4)
+  let l5id = calculateLeaseId(l5)
+
+  let entry = makeString([
+    "%s%d%s%s%s%s%s%s",
+    owner,
+    toString(height),
+    toString(i.caller),
+    toBase58String(l1id),
+    toBase58String(l2id),
+    toBase58String(l3id),
+    toBase58String(l4id),
+    toBase58String(l5id)
+  ], SEP)
+  
+  [
+    l1,
+    l2,
+    l3,
+    l4,
+    l5,
+    StringEntry(node, entry)
+  ]
+}
