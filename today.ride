@@ -44,7 +44,7 @@ func mintAnote() = {
     let amountAnote = fraction(amount, MULT8, price, CEILING)
 
     let amountAnoteFinal = if (tier > amountAnote) then amountAnote else tier
-    let tierNew = if (tier > amountAnote) then tier - amountAnote else MULT8 * 100
+    let tierNew = if (tier > amountAnote) then tier - amountAnote else MULT8 * 10
     let priceNew = if (tier > amountAnote) then price else price + PRICESTEP
     # let amountBeneficirary = if (tier >= amountAnote) then amount else amount - fraction(amountAnoteFinal, price, MULT8, FLOOR)
     # let returnAmount = if (tier >= amountAnote) then 0 else amount - amountBeneficirary
