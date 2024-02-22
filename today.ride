@@ -3,11 +3,11 @@
 {-# SCRIPT_TYPE ACCOUNT #-}
 
 let SEP = "__"
-let ANOTEIDSTR = "WAVES"
-let ANOTEID    = fromBase58String(ANOTEIDSTR)
+let AINTIDSTR = "WAVES"
+let AINTID    = fromBase58String(AINTIDSTR)
 let MULT8 = 1_0000_0000
 let MULT6 = 1_000_000
-let AINTID = fromBase58String("7paojf37ipks5Ac4rHMwtLHHe9YU6w8FBfafwoTEmmf9")
+let ANOTEID = fromBase58String("9tZso8WvrB2YR5SA7RyCnsLcKjTZBGtQq49Js8cczeyb")
 
 func keyBeneficiaryAddress() = "%s__beneficiaryAddress"
 func keyPrice() = "%s__price"
@@ -20,9 +20,9 @@ let PRICESTEP = MULT8 / 10
 func bid() = {
     let adKey = "%s__" + toString(i.caller)
     let pmt = i.payments[0]
-    let pmtAssetId = pmt.assetId.valueOrElse(ANOTEID)
+    let pmtAssetId = pmt.assetId.valueOrElse(AINTID)
     if (i.payments.size() != 1) then throw("exact 1 payment must be attached") else
-    if (pmtAssetId != ANOTEID) then throw("only Anotes can be used in payment") else
+    if (pmtAssetId != AINTID) then throw("only Anotes can be used in payment") else
     if (i.payments[0].amount < MULT8) then throw("minimum bid is 1 ANOTE") else
     let alreadyPaid = getInteger(adKey).valueOrElse(0)
     let amount = alreadyPaid + i.payments[0].amount
@@ -30,36 +30,34 @@ func bid() = {
 }
 
 @Callable(i)
-func mintAint() = {
+func mintAnote() = {
     let pmt = i.payments[0]
-    let pmtAssetId = pmt.assetId.valueOrElse(ANOTEID)
+    let pmtAssetId = pmt.assetId.valueOrElse(AINTID)
     let amount = pmt.amount
 
     if (i.payments.size() != 1) then throw("exact 1 payment must be attached") else
-    if (pmtAssetId != ANOTEID) then throw("only ANOTE can be used in payment") else
+    if (pmtAssetId != AINTID) then throw("only AINT can be used in payment") else
 
     let price = getIntegerValue(keyPrice())
-    let priceAnote = getIntegerValue(keyPriceAnote())
-    let amountUsd = fraction(amount, priceAnote, MULT8, CEILING)
     let tier = getIntegerValue(keyTier())
     let addressBeneficiary = getStringValue(keyBeneficiaryAddress()).addressFromStringValue()
-    let amountAint = fraction(amountUsd, MULT8, price, CEILING)
+    let amountAnote = fraction(amount, MULT8, price, CEILING)
 
-    let amountAintFinal = if (tier > amountAint) then amountAint else tier
-    let tierNew = if (tier > amountAint) then tier - amountAint else MULT8 * 10
-    let priceNew = if (tier > amountAint) then price else price + PRICESTEP
-    # let amountBeneficirary = if (tier >= amountAint) then amount else amount - fraction(fraction(amountAintFinal, price, MULT8, FLOOR), priceAnote, MULT8, FLOOR)
-    # let returnAmount = if (tier >= amountAint) then 0 else amount - amountBeneficirary
+    let amountAnoteFinal = if (tier > amountAnote) then amountAnote else tier
+    let tierNew = if (tier > amountAnote) then tier - amountAnote else MULT8 * 100
+    let priceNew = if (tier > amountAnote) then price else price + PRICESTEP
+    # let amountBeneficirary = if (tier >= amountAnote) then amount else amount - fraction(amountAnoteFinal, price, MULT8, FLOOR)
+    # let returnAmount = if (tier >= amountAnote) then 0 else amount - amountBeneficirary
 
-    let st = ScriptTransfer(i.caller, amountAintFinal, AINTID)
+    # let st = ScriptTransfer(i.caller, amountAnoteFinal, ANOTEID)
 
     let preExecute = [
-        ScriptTransfer(i.caller, amountAintFinal, AINTID),
+        ScriptTransfer(i.caller, amountAnoteFinal, ANOTEID),
         # ScriptTransfer(addressBeneficiary, amountBeneficirary, unit),
         IntegerEntry(keyTier(), tierNew)
     ]
 
-    let execute = if (tier > amountAint) then preExecute else
+    let execute = if (tier > amountAnote) then preExecute else
         preExecute ++ [
             IntegerEntry(keyPrice(), priceNew)
             # ScriptTransfer(i.caller, returnAmount, unit)
