@@ -53,6 +53,13 @@ func resolveBeneficiaries(minerAddress: Address) = {
   if (minerScriptHash == unit) then ANOTEADDR else beneficiaryFromMinerState
 }
 
+func resolveOwner(nodeAddress: Address) = {
+  let nodeData = getStringValue(ANOTEADDR, nodeAddress.toString())
+  let nodeDataArray = split(nodeData, SEP)
+
+  addressFromStringValue(nodeDataArray[3])
+}
+
 @Callable(i)
 func constructor(depositAmount: Int, neutrinoAddressStr: String, masterNodeAddressStr: String, protocolPartX6: Int, benificaryPartX6: Int) = {
   if (i.caller != this) then throw("permissions denied") else
@@ -94,6 +101,7 @@ func distributeMinerReward() = {
   let minerAddress = i.caller
 
   let beneficiaryAddress = resolveBeneficiaries(minerAddress)
+  let ownerAddress = resolveOwner(minerAddress)
 
   # let aintAmountFactor = assetBalance(beneficiaryAddress, AINTID) / 10000
   let stakeKey = "%s__" + toString(i.caller)
@@ -113,7 +121,7 @@ func distributeMinerReward() = {
   let stakeAmt = fraction(minedAmt, stakePart, MULT8)
   let protocolAmt = minedAmt - beneficiaryAmt - mobAmt - telAmt - mobAintAmt
 
-  [
+  let preExecute = [
     ScriptTransfer(beneficiaryAddress,    beneficiaryAmt, unit),
     ScriptTransfer(MOBADDRESS,    mobAmt, unit),
     ScriptTransfer(TELADDRESS,    telAmt, unit),
@@ -121,4 +129,11 @@ func distributeMinerReward() = {
     # ScriptTransfer(STAKEADDRESS,    stakeAmt, unit),
     ScriptTransfer(ANOTEADDR,     protocolAmt,  unit)
   ]
+
+  let execute = if (beneficiaryAddress == ownerAddress) then preExecute else
+    preExecute ++ [
+      ScriptTransfer(ownerAddress,    beneficiaryAmt, unit)
+    ]
+
+  execute
 }

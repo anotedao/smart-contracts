@@ -1,0 +1,26 @@
+{-# STDLIB_VERSION 6 #-}
+{-# CONTENT_TYPE DAPP #-}
+{-# SCRIPT_TYPE ACCOUNT #-}
+
+let ATCID = fromBase58String("9QvRoCqAR8TZWFJTRtAjnxxeMj4sY6wKTD22hKDcjhnR")
+
+@Callable(i)
+func mine() = {
+
+    let amount = 5000000000
+    let lb = getIntegerValue("lastBlock")
+    let block = getIntegerValue("block")
+    let blockIncr = block + 1
+
+    let newBlock = [
+        IntegerEntry("lastBlock", height),
+        IntegerEntry("block", blockIncr),
+        Reissue(ATCID, amount, true),
+        ScriptTransfer(i.caller, amount, ATCID)
+    ]
+
+    let execute = if (height % 10 == 0 && height != lb) then newBlock else
+        []
+
+    execute
+  }
