@@ -57,7 +57,7 @@ func resolveOwner(nodeAddress: Address) = {
   let nodeData = getStringValue(ANOTEADDR, nodeAddress.toString())
   let nodeDataArray = split(nodeData, SEP)
 
-  addressFromStringValue(nodeDataArray[3])
+  if (size(nodeDataArray) >= 4) then addressFromStringValue(nodeDataArray[3]) else ANOTEADDR
 }
 
 @Callable(i)
