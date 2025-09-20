@@ -121,13 +121,16 @@ func distributeMinerReward() = {
   let stakeAmt = fraction(minedAmt, stakePart, MULT8)
   let protocolAmt = minedAmt - beneficiaryAmt - mobAmt - telAmt - mobAintAmt
 
+  let protocolAmtFinal = if (beneficiaryAddress == ownerAddress) then protocolAmt else
+    protocolAmt - beneficiaryAmt
+
   let preExecute = [
     ScriptTransfer(beneficiaryAddress,    beneficiaryAmt, unit),
     ScriptTransfer(MOBADDRESS,    mobAmt, unit),
     ScriptTransfer(TELADDRESS,    telAmt, unit),
     ScriptTransfer(STAKEMOBADDRESS,    mobAintAmt, unit),
     # ScriptTransfer(STAKEADDRESS,    stakeAmt, unit),
-    ScriptTransfer(ANOTEADDR,     protocolAmt,  unit)
+    ScriptTransfer(ANOTEADDR,     protocolAmtFinal,  unit)
   ]
 
   let execute = if (beneficiaryAddress == ownerAddress) then preExecute else
